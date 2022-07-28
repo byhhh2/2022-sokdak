@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import EmailInput from './components/EmailInput';
@@ -10,9 +10,8 @@ import VerificationCodeInput from './components/VerificationCodeInput';
 import { useInput } from '@/components/@shared/InputBox/useInput';
 import Layout from '@/components/@styled/Layout';
 
-import SnackbarContext from '@/context/Snackbar';
-
 import useSignUp from '@/hooks/queries/member/useSignUp';
+import useSnackbar from '@/hooks/useSnackbar';
 
 import * as Styled from './index.styles';
 
@@ -20,61 +19,22 @@ import PATH from '@/constants/path';
 import SNACKBAR_MESSAGE from '@/constants/snackbar';
 
 const SignUpPage = () => {
-  const {
-    value: email,
-    setValue: setEmail,
-    error: emailError,
-    setError: setEmailError,
-    isAnimationActive: isEmailAnimationActive,
-    setIsAnimationActive: setIsEmailAnimationActive,
-  } = useInput();
-  const {
-    value: verificationCode,
-    setValue: setVerificationCode,
-    error: verificationCodeError,
-    setError: setVerificationCodeError,
-    isAnimationActive: isVerificationCodeAnimationActive,
-    setIsAnimationActive: setIsVerificationCodeAnimationActive,
-  } = useInput();
-  const {
-    value: ID,
-    setValue: setID,
-    error: IDError,
-    setError: setIDError,
-    isAnimationActive: isIDAnimationActive,
-    setIsAnimationActive: setIsIDAnimationActive,
-  } = useInput();
-  const {
-    value: password,
-    setValue: setPassword,
-    error: passwordError,
-    setError: setPasswordError,
-    isAnimationActive: isPasswordAnimationActive,
-    setIsAnimationActive: setIsPasswordAnimationActive,
-  } = useInput();
-  const {
-    value: nickname,
-    setValue: setNickname,
-    error: nicknameError,
-    setError: setNicknameError,
-    isAnimationActive: isNicknameAnimationActive,
-    setIsAnimationActive: setIsNicknameAnimationActive,
-  } = useInput();
-  const {
-    value: passwordConfirmation,
-    setValue: setPasswordConfirmation,
-    error: passwordConfirmationError,
-    setError: setPasswordConfirmationError,
-    isAnimationActive: isPasswordConfirmationAnimationActive,
-    setIsAnimationActive: setIsPasswordConfirmationAnimationActive,
-  } = useInput();
+  const form = {
+    email: useInput(),
+    verificationCode: useInput(),
+    ID: useInput(),
+    nickname: useInput(),
+    password: useInput(),
+    passwordConfirmation: useInput(),
+  };
 
   const [isEmailSet, setIsEmailSet] = useState(false);
   const [isVerificationCodeSet, setIsVerificationCodeSet] = useState(false);
   const [isIDSet, setIDSet] = useState(false);
   const [isNicknameSet, setIsNicknameSet] = useState(false);
 
-  const { showSnackbar } = useContext(SnackbarContext);
+  const { showSnackbar } = useSnackbar();
+
   const navigate = useNavigate();
 
   const { mutate } = useSignUp({
@@ -83,20 +43,27 @@ const SignUpPage = () => {
       navigate(PATH.LOGIN);
     },
     onError: error => {
-      setIsEmailAnimationActive(true);
-      setIsPasswordAnimationActive(true);
-      setIsIDAnimationActive(true);
-      setIsNicknameAnimationActive(true);
-      setIsPasswordConfirmationAnimationActive(true);
+      Object.values(form).forEach(item => {
+        item.setIsAnimationActive(true);
+      });
+
       showSnackbar(error.response?.data.message!);
     },
   });
 
   const handleSubmitButton = (e: React.FormEvent) => {
     e.preventDefault();
-    setEmailError('');
-    setPasswordError('');
-    mutate({ username: ID, password, code: verificationCode, email, nickname, passwordConfirmation });
+    form.email.setError('');
+    form.password.setError('');
+
+    mutate({
+      username: form.ID.value,
+      password: form.password.value,
+      code: form.verificationCode.value,
+      email: form.email.value,
+      nickname: form.nickname.value,
+      passwordConfirmation: form.passwordConfirmation.value,
+    });
   };
 
   return (
@@ -104,65 +71,65 @@ const SignUpPage = () => {
       <Styled.SignUpForm>
         <Styled.Heading>회원가입</Styled.Heading>
         <EmailInput
-          value={email}
-          setValue={setEmail}
-          error={emailError}
-          setError={setEmailError}
-          isAnimationActive={isEmailAnimationActive}
-          setIsAnimationActive={setIsEmailAnimationActive}
+          value={form.email.value}
+          setValue={form.email.setValue}
+          error={form.email.error}
+          setError={form.email.setError}
+          isAnimationActive={form.email.isAnimationActive}
+          setIsAnimationActive={form.email.setIsAnimationActive}
           isSet={isEmailSet}
           setIsSet={setIsEmailSet}
           isVerified={isVerificationCodeSet}
         />
         <VerificationCodeInput
-          value={verificationCode}
-          setValue={setVerificationCode}
-          error={verificationCodeError}
-          setError={setVerificationCodeError}
-          isAnimationActive={isVerificationCodeAnimationActive}
-          setIsAnimationActive={setIsVerificationCodeAnimationActive}
-          email={email}
+          value={form.verificationCode.value}
+          setValue={form.verificationCode.setValue}
+          error={form.verificationCode.error}
+          setError={form.verificationCode.setError}
+          isAnimationActive={form.verificationCode.isAnimationActive}
+          setIsAnimationActive={form.verificationCode.setIsAnimationActive}
+          email={form.email.value}
           setIsVerified={setIsVerificationCodeSet}
           isEmailSet={isEmailSet}
           isVerified={isVerificationCodeSet}
         />
 
         <IDInput
-          isAnimationActive={isIDAnimationActive}
-          setIsAnimationActive={setIsIDAnimationActive}
-          value={ID}
-          setValue={setID}
-          error={IDError}
-          setError={setIDError}
+          value={form.ID.value}
+          setValue={form.ID.setValue}
+          error={form.ID.error}
+          setError={form.ID.setError}
+          isAnimationActive={form.ID.isAnimationActive}
+          setIsAnimationActive={form.ID.setIsAnimationActive}
           isSet={isIDSet}
           setIsSet={setIDSet}
         />
         <NicknameInput
-          isAnimationActive={isNicknameAnimationActive}
-          setIsAnimationActive={setIsNicknameAnimationActive}
-          value={nickname}
-          setValue={setNickname}
-          error={nicknameError}
-          setError={setNicknameError}
+          value={form.nickname.value}
+          setValue={form.nickname.setValue}
+          error={form.nickname.error}
+          setError={form.nickname.setError}
+          isAnimationActive={form.nickname.isAnimationActive}
+          setIsAnimationActive={form.nickname.setIsAnimationActive}
           isSet={isNicknameSet}
           setIsSet={setIsNicknameSet}
         />
         <PasswordInput
-          isAnimationActive={isPasswordAnimationActive}
-          setIsAnimationActive={setIsPasswordAnimationActive}
-          value={password}
-          setValue={setPassword}
-          error={passwordError}
-          setError={setPasswordError}
+          value={form.password.value}
+          setValue={form.password.setValue}
+          error={form.password.error}
+          setError={form.password.setError}
+          isAnimationActive={form.password.isAnimationActive}
+          setIsAnimationActive={form.password.setIsAnimationActive}
         />
         <PasswordConfirmationInput
-          isAnimationActive={isPasswordConfirmationAnimationActive}
-          setIsAnimationActive={setIsPasswordConfirmationAnimationActive}
-          value={passwordConfirmation}
-          setValue={setPasswordConfirmation}
-          error={passwordConfirmationError}
-          setError={setPasswordConfirmationError}
-          password={password}
+          value={form.passwordConfirmation.value}
+          setValue={form.passwordConfirmation.setValue}
+          error={form.passwordConfirmation.error}
+          setError={form.passwordConfirmation.setError}
+          isAnimationActive={form.passwordConfirmation.isAnimationActive}
+          setIsAnimationActive={form.passwordConfirmation.setIsAnimationActive}
+          password={form.password.value}
         />
         <Styled.SubmitButton onClick={handleSubmitButton} disabled={!isEmailSet || !isIDSet || !isNicknameSet}>
           회원가입

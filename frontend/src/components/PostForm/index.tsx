@@ -1,11 +1,12 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 
-import SnackbarContext from '@/context/Snackbar';
+import HashTag from '@/components/HashTag';
+
+import useSnackbar from '@/hooks/useSnackbar';
 
 import * as Styled from './index.styles';
 
-import HashTag from '../HashTag';
-import useHashTag from '../HashTag/useHashTag';
+import useHashTag from './useHashTag';
 
 interface PostFormProps {
   heading: string;
@@ -24,7 +25,7 @@ const PostForm = ({
   prevHashTags = [],
   handlePost,
 }: PostFormProps) => {
-  const { isVisible, showSnackbar } = useContext(SnackbarContext);
+  const { isVisible, showSnackbar } = useSnackbar();
 
   const [title, setTitle] = useState(prevTitle);
   const [content, setContent] = useState(prevContent);
